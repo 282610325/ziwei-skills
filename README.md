@@ -31,13 +31,73 @@ skills/
 
 ## 安装
 
-把 `skills/` 下的两个目录复制到项目的技能目录：
+### 方式一：复制到项目（推荐）
+
+Trae 从项目根目录的 `.trae/skills/` 加载技能。
 
 ```bash
+git clone https://github.com/282610325/ziwei-skills.git
+cd ziwei-skills
+
+mkdir -p /path/to/your-project/.trae/skills
 cp -R skills/地天盘 skills/前程盘 /path/to/your-project/.trae/skills/
 ```
 
-然后把文档里的 `/path/to/workspace` 换成你自己的工作区路径。
+### 方式二：只取两个目录
+
+不想保留仓库时，克隆到临时目录再复制：
+
+```bash
+tmp=$(mktemp -d)
+git clone --depth 1 https://github.com/282610325/ziwei-skills.git "$tmp"
+cp -R "$tmp/skills/地天盘" "$tmp/skills/前程盘" /path/to/your-project/.trae/skills/
+rm -rf "$tmp"
+```
+
+### 补齐依赖（必做）
+
+本仓库不含排盘与起卦引擎。缺下面两个技能时：地天盘跑不起来，前程盘只能做结构校验、取不到盘。
+
+```bash
+# 1) 排盘引擎：ziwei-doushu
+#    按其文档放入 .trae/skills/ziwei-doushu，再安装锁定依赖
+npm ci --prefix /path/to/your-project/.trae/skills/ziwei-doushu --ignore-scripts
+
+# 2) 起卦引擎：meihua-yishu
+#    放入 .trae/skills/meihua-yishu，地天盘第三层需要
+```
+
+环境检查：
+
+```bash
+node -v      # 需要 >= 18
+python3 -V   # 需要 >= 3.9
+```
+
+### 验证安装
+
+以前程盘为例（需要一份已建好的命盘）：
+
+```bash
+python3 /path/to/your-project/.trae/skills/前程盘/scripts/qiancheng.py digest \
+  --chart /path/to/your-project/命理档案/YYYY-MM-DD_姓名/versions/vNNNN/chart.json
+```
+
+能输出六宫、三个大限和流年四化，就是装好了。报 `命盘不存在`，先走 `ziwei-doushu` 的建档流程生成 `chart.json`。
+
+### 五分钟快速开始
+
+1. 把 `skills/` 下两个目录复制到项目的 `.trae/skills/`
+2. 放入 `ziwei-doushu`、`meihua-yishu`
+3. `npm ci` 安装排盘依赖
+4. 用 `ziwei-doushu` 建档，得到 `chart.json`
+5. 在对话里说：「前程盘，问：我未来几年该往哪走」
+
+### 安装说明
+
+- 文档里的 `/path/to/workspace` 是占位符，替换成你的实际路径。
+- Windows 下把 `cp -R` 换成 `xcopy /E /I`，路径分隔符相应调整。
+- `flow.cjs`（流月/流日）属于 `ziwei-doushu`，不在本仓库；前程盘的可选月日窗口需要它。
 
 ## 使用
 
@@ -72,3 +132,7 @@ cp -R skills/地天盘 skills/前程盘 /path/to/your-project/.trae/skills/
 3. 两个技能都**不预测具体职位、收入、公司或事件**，只缩小可行域、标出节奏、排除自欺选项。
 4. 命理不具科学预测效力，不替代职业规划、医疗、法律、投资建议。
 5. 如果长期复盘命中率不高于「什么都不说」，应当停用。这句话写在这里，防止以后自己骗自己。
+
+## 许可证
+
+以 [MIT License](LICENSE) 发布，可自由使用、修改与分发，需保留版权声明。命理结论不构成任何明示或暗示的保证。
